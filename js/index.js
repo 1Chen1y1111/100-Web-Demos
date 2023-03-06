@@ -1,91 +1,165 @@
-init()
-
-function init() {
-  initTodoList;
-}
-
-var initTodoList = (function () {
-  var showInput = document.getElementsByClassName('j-show-input')[0],
-    inputWrap = document.getElementsByClassName('input-wrap')[0],
-    addItem = document.getElementsByClassName('j-add-item')[0],
-    oList = document.getElementsByClassName('j-list')[0],
-    textInput = document.getElementById('textInput'),
-    isEdit = false,
-    curIndex = null;
-  inputShow = false;
-  addEvent(showInput, 'click', function () {
-    if (inputShow) {
-      inputWrap.style.display = 'none'
-      inputShow = false
-    } else {
-      inputWrap.style.display = 'block'
-      inputShow = true
+; (function (node) {
+  var TodoList = function () {
+    _self = this
+    this.node = node
+    this.inputShow = false
+    this.isEdit = false
+    this.curIndex = null
+    this.defaultConfig = {
+      "plusBtn": "",
+      "inputArea": "",
+      "addBtn": "",
+      "list": "",
+      "itemClass": ""
     }
-  })
-
-  addEvent(addItem, 'click', function () {
-    var oItems = document.getElementsByClassName('item'), // 类数组
-      val = textInput.value,
-      len = val.length,
-      itemLen = oItems.length,
-      item;
-    if (len === 0) {
-      return
-    }
-    for (var i = 0; i < itemLen; i++) {
-      // 性能优化
-      item = elemChildren(oItems[i])[0]
-      var text = item.innerText;
-      if (val === text) {
-        alert('当前待办已存在')
+    this.config = this.getConfig()
+    this.itemClass = this.config.itemClass
+    for (var key in this.defaultConfig) {
+      if (!this.config.hasOwnProperty(key)) {
+        // 抛出错误
+        console.log(errorInfo(key));
         return
       }
     }
-    if (isEdit) {
-      elemChildren(oItems[curIndex])[0].innerText = val
-      resetStatus()
-    } else {
-      var oLi = document.createElement('li')
-      oLi.className = 'item'
-      oLi.innerHTML = itemTpl(val)
-      oList.appendChild(oLi)
-      textInput.value = ''
+
+    this.setConfig()
+
+    addEvent(this.plusBtn, 'click', function () {
+      // _self.showInput().call(_self)
+      _self.showInput()
+    })
+
+    addEvent(this.addBtn, 'click', function () {
+      _self.addBtnClick()
+    })
+
+    addEvent(this.list, 'click', function (edit) {
+      var e = e || window.event,
+        tar = e.target || e.srcElement;
+      _self.listClick(tar)
+    })
+  }
+
+  TodoList.prototype = {
+    getConfig: function () {
+      // var config = this.node.dataset.config // 兼容性问题
+      return JSON.parse(this.node.getAttribute('data-config'))
+    },
+
+    setConfig: function () {
+      var config = this.config,
+        node = this.node;
+      this.plusBtn = node.getElementsByClassName(config.plusBtn)[0]
+      this.inputArea = node.getElementsByClassName(config.inputArea)[0]
+      this.addBtn = node.getElementsByClassName(config.addBtn)[0]
+      this.list = node.getElementsByClassName(config.list)[0]
+      this.content = this.inputArea.getElementsByClassName('content')[0]
+    },
+
+    showInput: function () {
+      var _self = this
+      if (this.inputShow) {
+        setInputShow.call(_self, 'close')
+      } else {
+        setInputShow.call(_self, 'open')
+      }
+    },
+
+    addBtnClick: function () {
+      var content = this.content.value,
+        contentLen = content.length,
+        oItems = this.list.getElementsByClassName('item'),
+        itemLen = oItems.length,
+        text;
+      if (contentLen <= 0) {
+        return;
+      }
+
+      if (itemLen > 0) {
+        for (var i = 0; i < itemLen; i++) {
+          text = elemChildren(oItems[i])[0].innerText
+          if (text === content) {
+            alert('已存在该待办事项')
+            return
+          }
+        }
+      }
+
+      if (this.isEdit) {
+        elemChildren(oItems[this.curIndex])[0].innerText = content
+        setInputStatus.apply(_self, [oItems, null, "add"])
+      } else {
+        var oLi = document.createElement('li')
+        oLi.className = this.itemClass
+        oLi.innerHTML = itemTpl(content)
+        this.list.appendChild(oLi)
+        this.content.value = null
+      }
+    },
+
+    listClick: function (tar) {
+      var _self = this,
+        className = tar.className,
+        oItems = this.list.getElementsByClassName('item'),
+        itemLen = oItems.length,
+        liParent = elemParent(tar, 2),
+        item;
+      if (className === 'edit-btn fa fa-edit') {
+        // 编辑模式下
+        for (var i = 0; i < itemLen; i++) {
+          item = oItems[i]
+          item.className = 'item'
+        }
+        liParent.className += ' active'
+        setInputStatus.apply(_self, [oItems, liParent, "edit"])
+      } else if (className === 'remove-btn fa fa-window-close-o') {
+        // 删除
+        liParent.remove()
+      }
     }
-  })
+  }
 
-  addEvent(oList, 'click', function (e) {
-    // IE9兼容性
-    var e = e || window.event,
-      tar = e.target || e.srcElement,
-      className = tar.className,
-      liParent = elemParent(tar, 2),
-      oItems = document.getElementsByClassName('item');
+  function setInputShow(action) {
+    if (action === 'open') {
+      this.inputArea.style.display = 'block'
+      this.inputShow = true
+    } else if (action === 'close') {
+      this.inputArea.style.display = 'none'
+      this.inputShow = false
+    }
+  }
 
-    if (className === 'edit-btn fa fa-edit') {
-      // 编辑模式下
+  function setInputStatus(oItems, target, status) {
+    if (status === 'edit') {
+      var idx = Array.prototype.indexOf.call(oItems, target);
+      this.addBtn.innerText = '编辑第' + (idx + 1) + '项'
+      this.isEdit = true
+      this.curIndex = idx
+      this.content.value = elemChildren(oItems[idx])[0].innerText
+    } else if (status === 'add') {
       var itemLen = oItems.length,
-        tarIndex = Array.prototype.indexOf.call(oItems, liParent),
         item;
       for (var i = 0; i < itemLen; i++) {
         item = oItems[i]
         item.className = 'item'
+        this.isEdit = false
+        this.curIndex = null
+        this.addBtn.innerText = '新增一下'
+        this.content.value = null
       }
-      isEdit = true
-      curIndex = tarIndex
-      liParent.className = 'item active'
-      addItem.innerText = '编辑第' + (curIndex + 1) + '项'
-      textInput.value = elemChildren(oItems[tarIndex])[0].innerText
-    } else if (className === 'remove-btn fa fa-window-close-o') {
-      // 删除
-      liParent.remove()
     }
-  })
+  }
 
-  function resetStatus() {
-    textInput.value = null
-    isEdit = false
-    curIndex = null
-    addItem.innerText = '新增一下'
+  function errorInfo(key) {
+    return new Error(
+      '您没有配置参数' + key + '\n' +
+      '必须配置的参数列表如下:\n' +
+      '打开输入框按钮元素类名:plusBtn\n' +
+      '输入框区域元素类名:inputArea\n' +
+      '增加项目按钮元素类名:addBtn\n' +
+      '列表承载元素类名:list\n' +
+      '列表承载元素类名:itemClass\n'
+    )
   }
 
   function itemTpl(text) {
@@ -97,4 +171,5 @@ var initTodoList = (function () {
       '</div>'
     )
   }
-})()
+  new TodoList()
+})(document.getElementsByClassName('wrap')[0])
