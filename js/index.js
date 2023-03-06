@@ -9,7 +9,9 @@ var initTodoList = (function () {
     inputWrap = document.getElementsByClassName('input-wrap')[0],
     addItem = document.getElementsByClassName('j-add-item')[0],
     oList = document.getElementsByClassName('j-list')[0],
-    textInput = document.getElementById('textInput');
+    textInput = document.getElementById('textInput'),
+    isEdit = false,
+    curIndex = null;
   inputShow = false;
   addEvent(showInput, 'click', function () {
     if (inputShow) {
@@ -30,7 +32,6 @@ var initTodoList = (function () {
     if (len === 0) {
       return
     }
-    console.log(oItems[1], 'oItems');
     for (var i = 0; i < itemLen; i++) {
       // 性能优化
       item = elemChildren(oItems[i])[0]
@@ -40,19 +41,59 @@ var initTodoList = (function () {
         return
       }
     }
-    var oLi = document.createElement('li')
-    oLi.className = 'item'
-    oLi.innerHTML = itemTpl(val)
-    oList.appendChild(oLi)
-    textInput.value = ''
+    if (isEdit) {
+      elemChildren(oItems[curIndex])[0].innerText = val
+      resetStatus()
+    } else {
+      var oLi = document.createElement('li')
+      oLi.className = 'item'
+      oLi.innerHTML = itemTpl(val)
+      oList.appendChild(oLi)
+      textInput.value = ''
+    }
   })
+
+  addEvent(oList, 'click', function (e) {
+    // IE9兼容性
+    var e = e || window.event,
+      tar = e.target || e.srcElement,
+      className = tar.className,
+      liParent = elemParent(tar, 2),
+      oItems = document.getElementsByClassName('item');
+
+    if (className === 'edit-btn fa fa-edit') {
+      // 编辑模式下
+      var itemLen = oItems.length,
+        tarIndex = Array.prototype.indexOf.call(oItems, liParent),
+        item;
+      for (var i = 0; i < itemLen; i++) {
+        item = oItems[i]
+        item.className = 'item'
+      }
+      isEdit = true
+      curIndex = tarIndex
+      liParent.className = 'item active'
+      addItem.innerText = '编辑第' + (curIndex + 1) + '项'
+      textInput.value = elemChildren(oItems[tarIndex])[0].innerText
+    } else if (className === 'remove-btn fa fa-window-close-o') {
+      // 删除
+      liParent.remove()
+    }
+  })
+
+  function resetStatus() {
+    textInput.value = null
+    isEdit = false
+    curIndex = null
+    addItem.innerText = '新增一下'
+  }
 
   function itemTpl(text) {
     return (
       '<p class="item-content">' + text + '</p>' +
       '<div class="btn-group">' +
-      '<a href="javascript:;" class="edit-btn fa fa-plus"></a>' +
-      '<a href="javascript:;" class="remove-btn fa fa-plus"></a>' +
+      '<a href="javascript:;" class="edit-btn fa fa-edit"></a>' +
+      '<a href="javascript:;" class="remove-btn fa fa-window-close-o"></a>' +
       '</div>'
     )
   }

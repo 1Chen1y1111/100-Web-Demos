@@ -25,3 +25,22 @@ function elemChildren(node) {
   }
   return temp
 }
+/**
+ * 查找父级元素
+ * @param {HTMLElement} node 当前元素节点
+ * @param {Number} n 第几个父级元素
+ */
+function elemParent(node, n) {
+  var type = typeof (n);
+  if (type === 'undefined') {
+    return node.parentNode
+  } else if (n <= 0 || type !== 'number') {
+    return undefined
+  }
+
+  while (n) {
+    node = node.parentNode
+    n--
+  }
+  return node
+}

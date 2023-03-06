@@ -69,12 +69,16 @@
 
 .list-wrap .item {
   position: relative;
-  height: 50px;
+  height: 39px;
+}
+
+.list-wrap .active {
+  background: #409EFF !important;
 }
 
 .list-wrap .item:nth-child(even),
 .list-wrap .item:hover {
-  background-color: #eee;
+  background-color: #67C23A;
 }
 
 .list-wrap .item .item-content {
@@ -83,14 +87,14 @@
   top: 0;
   width: 400px;
   height: 100%;
-  line-height: 50px;
+  line-height: 39px;
   text-indent: 15px;
 }
 
 .list-wrap .item .btn-group {
   height: 100%;
   margin-left: 400px;
-  line-height: 50px;
+  line-height: 39px;
 }
 
 .list-wrap .item .btn-group a {
