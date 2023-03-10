@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake</title>
+  <style>
+    .wrap {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      margin: 50px auto;
+      background-color: #000;
+      overflow: hidden;
+    }
+
+    .food {
+      display: block;
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #409EFF;
+    }
+
+    .round {
+      display: block;
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #E6A23C;
+    }
+
+    .round.head {
+      background-color: #67C23A;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap"></div>
+  <script type="text/javascript" src="./js/utils.js"></script>
+  <script type="text/javascript">
+    window.onload = function () {
+      init()
+    }
+    function init() {
+      initGame()
+    }
+    var initGame = (function () {
+      var wrap = document.getElementsByClassName('wrap')[0],
+        wrapW = getStyles(wrap, 'width'),
+        wrapH = getStyles(wrap, 'height'),
+        t = null;
+      var Snake = function () {
+        this.bodyArr = [
+          { x: 0, y: 0 },
+          { x: 0, y: 20 },
+          { x: 0, y: 40 },
+          { x: 0, y: 60 },
+          { x: 0, y: 80 },
+          { x: 0, y: 100 }
+        ],
+          this.dir = 'BOTTOM'
+      }
+      Snake.prototype = {
+        init: function () {
+          this.initSnake()
+          this.bindEvent()
+          this.run()
+          this.createFood()
+        },
+        bindEvent: function () {
+          var _self = this
+          // FUN包裹改变this指向
+          addEvent(document, 'keydown', function () {
+            _self.changeDir()
+          })
+        },
+        // 初始化
+        initSnake: function () {
+          var arr = this.bodyArr,
+            len = arr.length,
+            frag = document.createDocumentFragment(),
+            item;
+          for (var i = 0; i < len; i++) {
+            item = arr[i]
+            var round = document.createElement('i')
+            round.className = i === len - 1 ? 'round head' : 'round'
+            round.style.left = item.x + 'px'
+            round.style.top = item.y + 'px'
+            frag.appendChild(round)
+          }
+          wrap.appendChild(frag)
+        },
+
+        // 启动
+        run: function () {
+          var _self = this
+          t = setInterval(function () {
+            _self.move()
+          }, 100)
+        },
+
+        // 移动
+        move: function () {
+          var arr = this.bodyArr,
+            len = arr.length;
+          for (var i = 0; i < len; i++) {
+            if (i === len - 1) {
+              this.setHeadXY(arr)
+            } else {
+              arr[i].x = arr[i + 1].x
+              arr[i].y = arr[i + 1].y
+            }
+          }
+          this.eatFood(arr)
+          this.removeSnake()
+          this.initSnake()
+          this.headTouchBody(arr)
+        },
+
+        setHeadXY: function (arr) {
+          var head = arr[arr.length - 1];
+          switch (this.dir) {
+            case 'LEFT':
+              if (head.x <= 0) {
+                head.x = wrapW - 20
+              } else {
+                head.x -= 20
+              }
+              break;
+            case 'RIGHT':
+              if (head.x >= wrapW - 20) {
+                head.x = 0
+              } else {
+                head.x += 20
+              }
+              break;
+            case 'TOP':
+              if (head.y <= 0) {
+                head.y = wrapH - 20
+              } else {
+                head.y -= 20
+              }
+              break;
+            case 'BOTTOM':
+              if (head.y >= wrapH - 20) {
+                head.y = 0
+              } else {
+                head.y += 20
+              }
+              break;
+            default:
+              break;
+          }
+        },
+
+        // 碰撞身体
+        headTouchBody(arr) {
+          var headX = arr[arr.length - 1].x,
+            headY = arr[arr.length - 1].y,
+            item;
+          for (var i = 0; i < arr.length - 2; i++) {
+            item = arr[i]
+            if (headX === item.x && headY === item.y) {
+              var _self = this
+              setTimeout(function () {
+                alert('游戏结束')
+                clearInterval(t)
+                _self.removeSnake()
+              }, 0)
+            }
+          }
+        },
+
+        // 移除
+        removeSnake: function () {
+          var snakeBody = document.getElementsByClassName('round');
+          while (snakeBody.length > 0) {
+            snakeBody[0].remove()
+          }
+        },
+
+        // 改变方向
+        changeDir: function (e) {
+          var e = e || window.event,
+            code = e.keyCode;
+          this.setDir(code)
+        },
+
+        // 设置方向
+        setDir: function (code) {
+          switch (code) {
+            // 左
+            case 37:
+              if (this.dir !== 'RIGHT' && this.dir !== 'LEFT') {
+                this.dir = 'LEFT'
+              }
+              break;
+            // 右边
+            case 39:
+              if (this.dir !== 'RIGHT' && this.dir !== 'LEFT') {
+                this.dir = 'RIGHT'
+              }
+              break;
+            //上
+            case 38:
+              if (this.dir !== 'TOP' && this.dir !== 'BOTTOM') {
+                this.dir = 'TOP'
+              }
+              break;
+            //下
+            case 40:
+              if (this.dir !== 'TOP' && this.dir !== 'BOTTOM') {
+                this.dir = 'BOTTOM'
+              }
+              break;
+            default:
+              break;
+          }
+        },
+
+        // 食物
+        createFood: function () {
+          var food = document.createElement('i');
+          food.className = 'food';
+          food.style.left = this.setRandomPos(wrapW) * 20 + 'px'
+          food.style.top = this.setRandomPos(wrapH) * 20 + 'px'
+          wrap.appendChild(food)
+        },
+
+        setRandomPos: function (wOrH) {
+          return Math.floor(Math.random() * (wOrH / 20))
+        },
+
+        eatFood: function (arr) {
+          var food = document.getElementsByClassName('food')[0],
+            foodX = getStyles(food, 'left'),
+            foodY = getStyles(food, 'top'),
+            headX = arr[arr.length - 1].x,
+            headY = arr[arr.length - 1].y,
+            x,
+            y;
+          if (headX === foodX && headY === foodY) {
+            this.removeFood()
+            this.createFood()
+            // 判断新增身体方向
+            if (arr[0].x === arr[1].x) {
+              x = arr[0].x
+              if (arr[0].y > arr[1].y) {
+                y = arr[0].y + 20
+              } else if (arr[0].y < arr[1].y) {
+                y = arr[0].y - 20
+              }
+            } else if (arr[0].y === arr[1].y) {
+              y = arr[0].y
+              if (arr[0].x > arr[1].x) {
+                x = arr[0] + 20
+              } else if (arr[0].x < arr[1].x) {
+                x = arr[0].x - 20
+              }
+            }
+            arr.unshift({ x, y })
+          }
+        },
+
+        removeFood: function () {
+          var food = document.getElementsByClassName('food')[0];
+          food.remove()
+        }
+      }
+      return new Snake().init()
+    })
+  </script>
+</body>
+
+</html>
