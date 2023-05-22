@@ -46,7 +46,7 @@
     addEvent(button, 'click', function (e) {
       console.log('theme: ', theme);
       if (theme == 'sun') {
-        sunItem.style.transform = 'translateX(22px)'
+        sunItem.style.transform = 'translateX(33px)'
         sunItem.style.opacity = 0
         // 确保平移操作已经完成后将图标隐藏  'transitionend'如果存在多个动画属性，会多次触发，所以{once:true}保证只触发一次
         addEvent(sunItem, 'transitionend', function (e) {
@@ -58,7 +58,7 @@
         }, { once: true })
         theme = "moon"
       } else {
-        moonItem.style.transform = 'translateX(-22px)'
+        moonItem.style.transform = 'translateX(-33px)'
         moonItem.style.opacity = 0
         // 确保平移操作已经完成后将图标隐藏
         addEvent(moonItem, 'transitionend', function (e) {

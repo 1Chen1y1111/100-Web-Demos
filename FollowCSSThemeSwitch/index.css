@@ -16,10 +16,10 @@
 
 button {
   display: block;
-  width: 45px;
-  height: 22px;
-  border-radius: 11px;
-  border: 1px solid #86909c;
+  width: 67px;
+  height: 34px;
+  border-radius: 16px;
+  border: 2px solid #86909c;
   background-color: var(--bg1);
   transition: border-color .25s;
   position: relative;
@@ -28,25 +28,26 @@ button {
 
 button span.check {
   position: absolute;
-  top: 1px;
-  left: 1px;
+  top: 0px;
+  left: 0px;
 }
 
 button span.check i {
   opacity: 1;
   transition: all .25s ease-in-out;
   text-align: center;
-  line-height: 18px;
-  width: 18px;
-  height: 18px;
+  line-height: 30px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  /* background-color:var(--bg2); */
-  /* box-shadow: var(--bg1); */
+  font-size: 22px;
+  background-color:var(--bg2);
+  /* box-shadow: var(--bg2); */
 }
 
 button span.check i:nth-child(2) {
   position: absolute;
-  left: 22px;
+  left: 33px;
 }
 
 button span.check i.hidden {
@@ -56,7 +57,7 @@ button span.check i.hidden {
 
 
 button:hover {
-  border: 1px solid #fff
+  border: 2px solid #fff
 }
 
 .main h1 {
