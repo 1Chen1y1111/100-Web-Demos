@@ -28,3 +28,7 @@
 **DingDingDashboard**
 
 - 首页动画缩放
+
+**FollowCSSThemeSwitch**
+
+- 基于CSS变量的主题切换

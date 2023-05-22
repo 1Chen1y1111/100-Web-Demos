@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基于css变量的主题切换</title>
+  <link rel="stylesheet" href="./fontAwesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="./theme.css">
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  <div class="main">
+    <button type="button">
+      <span class="check">
+        <i class="fa fa-sun-o"></i>
+        <i class="fa fa-moon-o hidden"></i>
+      </span>
+    </button>
+    <h1>Theme Switch</h1>
+    <span>Where there is a will, there is a way</span>
+  </div>
+
+  <script type="text/javascript">
+    // 跨浏览器兼容
+    var addEvent = function (el, type, fn, obj) {
+      if (el.addEventListener) {
+        el.addEventListener(type, fn, obj)
+      } else if (el.attachEvent) {
+        el.attachEvent('on' + type, function () {
+          fn.call(el)
+        })
+      } else {
+        el['on' + type] = fn
+      }
+    };
+  </script>
+  <script type="text/javascript">
+    var sunItem = document.getElementsByClassName('fa fa-sun-o')[0];
+    var moonItem = document.getElementsByClassName('fa fa-moon-o')[0];
+    var button = document.getElementsByTagName('button')[0];
+    var theme = 'sun'
+
+    addEvent(button, 'click', function (e) {
+      console.log('theme: ', theme);
+      if (theme == 'sun') {
+        sunItem.style.transform = 'translateX(22px)'
+        sunItem.style.opacity = 0
+        // 确保平移操作已经完成后将图标隐藏  'transitionend'如果存在多个动画属性，会多次触发，所以{once:true}保证只触发一次
+        addEvent(sunItem, 'transitionend', function (e) {
+          console.log(moonItem.classList, 'moonItem.classList');
+          // 重置sunItem位置
+          e.target.style.transform = 'translateX(0px)'
+          moonItem.style.opacity = 1
+          moonItem.classList.remove('hidden')
+        }, { once: true })
+        theme = "moon"
+      } else {
+        moonItem.style.transform = 'translateX(-22px)'
+        moonItem.style.opacity = 0
+        // 确保平移操作已经完成后将图标隐藏
+        addEvent(moonItem, 'transitionend', function (e) {
+          // 重置sunItem位置
+          e.target.style.transform = 'translateX(0px)'
+          sunItem.style.opacity = 1
+          e.target.classList.add('hidden')
+        }, { once: true })
+        theme = "sun"
+      }
+
+      document.documentElement.dataset.theme = theme
+    })
+  </script>
+</body>
+
+</html>
