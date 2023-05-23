@@ -11,3 +11,5 @@ html[data-theme='moon'] {
   --bg1: #c7ffdd;
   --bg2: #fbd988;
 }
+
+/* @media (prefers-color-scheme:moon) {} 用于检测用户是否有将系统的主题色设置为亮色或者暗色 */

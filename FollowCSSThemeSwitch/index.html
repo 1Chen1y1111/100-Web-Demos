@@ -43,35 +43,107 @@
     var button = document.getElementsByTagName('button')[0];
     var theme = 'sun'
 
-    addEvent(button, 'click', function (e) {
-      console.log('theme: ', theme);
-      if (theme == 'sun') {
-        sunItem.style.transform = 'translateX(33px)'
-        sunItem.style.opacity = 0
-        // 确保平移操作已经完成后将图标隐藏  'transitionend'如果存在多个动画属性，会多次触发，所以{once:true}保证只触发一次
-        addEvent(sunItem, 'transitionend', function (e) {
-          console.log(moonItem.classList, 'moonItem.classList');
-          // 重置sunItem位置
-          e.target.style.transform = 'translateX(0px)'
-          moonItem.style.opacity = 1
-          moonItem.classList.remove('hidden')
-        }, { once: true })
-        theme = "moon"
+    // 跟随系统颜色变化进行主题变化
+    const match = window.matchMedia('(prefers-color-scheme: dark)')
+    if (match.matches) {
+      theme = 'moon'
+      color2Moon()
+    } else {
+      theme = 'sun'
+      color2Sun()
+    }
+    loadTheme()
+
+    match.addEventListener('change', function (match) {
+      if (match.matches) {
+        theme = 'moon'
+        color2Moon()
       } else {
-        moonItem.style.transform = 'translateX(-33px)'
-        moonItem.style.opacity = 0
-        // 确保平移操作已经完成后将图标隐藏
-        addEvent(moonItem, 'transitionend', function (e) {
-          // 重置sunItem位置
-          e.target.style.transform = 'translateX(0px)'
-          sunItem.style.opacity = 1
-          e.target.classList.add('hidden')
-        }, { once: true })
-        theme = "sun"
+        theme = 'sun'
+        color2Sun()
+      }
+      loadTheme()
+    })
+
+    addEvent(button, 'click', function (e) {
+      if (theme == 'sun') {
+        debounce(color2Moon(), 300, false)
+      } else {
+        debounce(color2Sun(), 300, false)
+      }
+      loadTheme()
+    })
+
+
+    // 暗色
+    function color2Moon() {
+      sunItem.style.transform = 'translateX(33px)'
+      sunItem.style.opacity = 0
+      // 确保平移操作已经完成后将图标隐藏  'transitionend'如果存在多个动画属性，会多次触发，所以{once:true}保证只触发一次
+      addEvent(sunItem, 'transitionend', function (e) {
+        // 重置sunItem位置
+        e.target.style.transform = 'translateX(0px)'
+        moonItem.style.opacity = 1
+        moonItem.classList.remove('hidden')
+      }, { once: true })
+      theme = "moon"
+    }
+
+    // 亮色
+    function color2Sun() {
+      moonItem.style.transform = 'translateX(-33px)'
+      moonItem.style.opacity = 0
+      // 确保平移操作已经完成后将图标隐藏
+      addEvent(moonItem, 'transitionend', function (e) {
+        // 重置sunItem位置
+        e.target.style.transform = 'translateX(0px)'
+        sunItem.style.opacity = 1
+        e.target.classList.add('hidden')
+      }, { once: true })
+      theme = "sun"
+    }
+
+    // 挂载
+    function loadTheme() {
+      document.documentElement.dataset.theme = theme
+    }
+
+    // 防抖
+    function debounce(fn, delay, immediate) {
+      var timer = null
+
+      var debounced = function () {
+        var _self = this,
+          args = arguments;
+
+        if (timer) {
+          clearTimeout(timer)
+        }
+
+        if (immediate) {
+          var exec = !timer
+
+          timer = setTimeout(() => {
+            timer = null
+          }, delay);
+
+          if (exec) {
+            fn.apply(_self, args)
+          }
+        } else {
+          timer = setTimeout(() => {
+            fn.apply(_self, args)
+          }, delay);
+        }
       }
 
-      document.documentElement.dataset.theme = theme
-    })
+      debounced.remove = function () {
+        clearTimeout(timer)
+        timer = null
+      }
+
+      return debounced
+    }
   </script>
 </body>
 

@@ -34,7 +34,7 @@ button span.check {
 
 button span.check i {
   opacity: 1;
-  transition: all .25s ease-in-out;
+  transition: all .13s ease-in-out;
   text-align: center;
   line-height: 30px;
   width: 30px;
